@@ -1,0 +1,143 @@
+{{#section 'css'}}
+<style>
+    .mainSection {
+        margin: 2rem 12rem;
+        padding-left: 20rem;
+        position: relative;
+        border-style: solid none solid solid;
+        border-width: 1px;
+    }
+
+    .formWrap {
+        position: relative;
+        text-align: center;
+        border-style: none solid;
+        border-width: 1px;
+    }
+
+    .formWrap>form {
+        padding: 1rem 8rem;
+    }
+
+    .user {
+        text-align: center;
+        margin-left: -20rem;
+
+
+    }
+
+    .avatar {
+        width: 120px;
+        height: 120px;
+
+    }
+
+    ul {
+        list-style-type: none;
+    }
+</style>
+{{/section}}
+
+{{#section 'js'}}
+<script>
+    $('#frmPassword').on('submit', function (e) {
+        e.preventDefault();
+        $('#currentInputPassword').prop('required', true);
+        $('#newInputPassword').prop('required', true);
+        $('#retypeInputPassword').prop('required', true);
+
+        const curPassword = $('#currentInputPassword').val();
+        const newPassword = $('#newInputPassword').val();
+        const retypePassword = $('#retypeInputPassword').val();
+        const id = $('#id').val();
+
+        if (newPassword != retypePassword) {
+            $('#validNewPassword').removeClass('d-none');
+            $('#validPassword').addClass('d-none');
+            return;
+        }
+
+        $.getJSON(`/user/is-right?id=${id}&password=${curPassword}`, function (data) {
+            if (data === true) {
+                $('#frmPassword').off('submit').submit();
+            } else {
+                $('#validPassword').removeClass('d-none');
+            }
+        })
+    })
+</script>
+{{/section}}
+<div class="mainSection ">
+    <div class="sideNav mt-3 position-absolute">
+        <div class="user">
+            <div class="avatar text-white text-center mx-auto rounded-circle">
+                <span class="badge badge-primary w-100 h-100 rounded-circle"
+                    style="font-size: 5rem;padding: 1rem;">{{shortName}}</span>
+            </div>
+            <div class="userName"> {{userName}}</div>
+            <ul class="p-0">
+                <li>
+                    <a name="" id="" class="btn btn-outline-secondary w-100 my-1 active" href="javascript:;"
+                        role="button">Profile</a>
+                </li>
+                <li>
+                    <a name="" id="" class="btn btn-outline-secondary w-100 my-1" href="/user/wishlist"
+                        role="button">Watch List</a>
+                </li>
+                <li>
+                    <a name="" id="" class="btn btn-outline-secondary w-100 my-1" href="/user/my-course"
+                        role="button">My Course</a>
+                </li>
+
+            </ul>
+        </div>
+
+    </div>
+    <div class="formWrap">
+        <h2>Public Profile</h2>
+        <form id="frmName" method="POST" action="" class="text-left">
+            <div class="form-group">
+                <label for="inputName">Change Name:</label>
+                <input type="text" class="d-none" name="UserID" value="{{id}}">
+                <input type="text" class="form-control" id="inputName" name="UserName" placeholder="Full Name" required
+                    value="{{userName}}">
+            </div>
+            <button type="submit" class="btn btn-danger" formaction="/user/name">Save</button>
+        </form>
+        <form id="frmEmail" method="POST" action="" class="text-left">
+            <div class="form-group">
+                <label for="inputEmail">Email:</label>
+                <input type="text" class="d-none" name="UserID" value="{{id}}">
+                <input type="email" class="form-control mb-2" id="inputEmail" name="CurEmail" placeholder="Email"
+                    value="{{email}}" readonly>
+                <input type="email" class="form-control" id="inputNewEmail" name="Email" placeholder="New Email"
+                    required>
+            </div>
+            <button type="submit" class="btn btn-danger" formaction="/user/email">Save</button>
+        </form>
+        <form id="frmPassword" method="POST" action="/user/password" class="text-left">
+            <div>
+                <p id="validNewPassword" class="badge badge-danger w-100 text-left d-none" style="font-size: 1rem;">Your
+                    new password does not
+                    match
+                    confirmation.</p>
+                <p id="validPassword" class="badge badge-danger w-100 text-left d-none" style="font-size: 1rem;">Your
+                    password was incorrect..</p>
+
+            </div>
+            <div class="form-group">
+                <label for="inputPassword">Password:</label>
+                <input type="text" class="d-none" id="id" name="UserID" value="{{id}}">
+                <input type="password" class="form-control" id="currentInputPassword" required
+                    placeholder="Enter Current Password">
+                <input type="password" class="form-control" id="newInputPassword" name="Password" required
+                    placeholder="Enter New Password">
+                <input type="password" class="form-control" id="retypeInputPassword" placeholder="Re-type New Password"
+                    required>
+            </div>
+            <button type="submit" class="btn btn-danger">Save</button>
+        </form>
+
+    </div>
+
+</div>

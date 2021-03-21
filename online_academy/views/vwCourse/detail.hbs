@@ -1,0 +1,698 @@
+{{#section 'css'}}
+<style>
+    .rotate {
+        -moz-transition: all 0.3s linear;
+        -webkit-transition: all 0.3s linear;
+        transition: all 0.3s linear;
+    }
+
+    .bigStar>.fa {
+        font-size: 1.25rem;
+    }
+
+    .fa-star,
+    .fa-star-o,
+    .fa-star-half-o {
+        color: orange;
+    }
+
+    .reviewItem {
+        display: flex;
+        padding-bottom: 1rem;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: gray;
+        border-style: none none solid none;
+    }
+
+    .reviewItemAvatar {
+        display: block;
+        height: 3rem;
+        background-color: green;
+        line-height: 3rem;
+        margin-right: 1rem;
+    }
+
+    .sideBarMenu {
+        margin-left: 60rem;
+        position: fixed;
+        z-index: 1;
+        width: 25rem;
+    }
+
+    .rotate.down {
+        -ms-transform: rotate(180deg);
+        -moz-transform: rotate(180deg);
+        -webkit-transform: rotate(180deg);
+        transform: rotate(180deg);
+    }
+
+    .previewButton {}
+
+    @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+    /*reset css*/
+    div,
+    label {
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        margin: 20px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin: 10px;
+    }
+
+    /****** Style Star Rating Widget *****/
+    #rating {
+        border: none;
+        float: left;
+    }
+
+    #rating>input {
+        display: none;
+    }
+
+    /*ẩn input radio - vì chúng ta đã có label là GUI*/
+    #rating>label:before {
+        margin: 5px;
+        font-size: 1.25em;
+        font-family: FontAwesome;
+        display: inline-block;
+        content: "\f005";
+    }
+
+    /*1 ngôi sao*/
+    #rating>.half:before {
+        content: "\f089";
+        position: absolute;
+    }
+
+    /*0.5 ngôi sao*/
+    #rating>label {
+        color: #ddd;
+        float: right;
+    }
+
+    /*float:right để lật ngược các ngôi sao lại đúng theo thứ tự trong thực tế*/
+    /*thêm màu cho sao đã chọn và các ngôi sao phía trước*/
+    #rating>input:checked~label,
+    #rating:not(:checked)>label:hover,
+    #rating:not(:checked)>label:hover~label {
+        color: #FFD700;
+    }
+
+    /* Hover vào các sao phía trước ngôi sao đã chọn*/
+    #rating>input:checked+label:hover,
+    #rating>input:checked~label:hover,
+    #rating>label:hover~input:checked~label,
+    #rating>input:checked~label:hover~label {
+        color: #FFED85;
+    }
+</style>
+<link href="https://vjs.zencdn.net/7.10.2/video-js.css" rel="stylesheet" />
+{{/section}}
+
+{{#section 'js'}}
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="https://vjs.zencdn.net/7.10.2/video.min.js"></script>
+<script>
+
+    $('#myModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var recipient = button.data('src') // Extract info from data-* attributes
+        // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+        // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+        var modal = $(this)
+
+        modal.find('.videoContainer').children().remove();
+        var video = $('<video />', {
+            src: recipient,
+            type: 'video/mp4',
+            controls: true,
+            class: 'video-js',
+            width: '100%',
+            height: '300'
+        });
+        video.appendTo($('.videoContainer'));
+    })
+    $('#myModal').on('hide.bs.modal', function (e) {
+        // a poor man's stop video
+        var modal = $(this)
+        modal.find('.videoContainer').children().remove();
+    })
+
+    $(".collapsed").click(function () {
+        $(this).children('.rotate').toggleClass("down");
+    })
+
+    function changeDisplay() {
+        var scroll = $(window).scrollTop();
+
+        if (scroll >= 200) {
+            $('#sideBar').removeClass('position-absolute')
+                .addClass("sticky-top");
+        } else {
+            $('#sideBar').removeClass("sticky-top")
+                .addClass('position-absolute');
+        }
+
+        setTimeout(changeDisplay, 10)
+    }
+    $(function () {
+        changeDisplay();
+    })
+
+
+    $('#buy').on('click', function () {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, Buy it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: "You have bought this course.",
+                    icon: 'success',
+                    showCancelButton: false,
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'OK!'
+                }).then((result) => {
+                    $('#frmBuy').submit();
+                })
+
+            }
+        })
+    })
+
+    $('#buyNotAuth').on('click', function () {
+        $('#frmBuy').submit();
+    })
+
+    function calcRate(r) {
+        const f = ~~r,//Tương tự Math.floor(r)
+            id = 'star' + f + (r % f ? 'half' : '')
+        id && (document.getElementById(id).checked = !0)
+    }
+
+    $('#submitReviewButton').on('click', function () {
+        var isSubmit = false;
+        if ($('#star2').is(':checked')) { isSubmit = true; }
+        if ($('#star3').is(':checked')) { isSubmit = true; }
+        if ($('#star1').is(':checked')) { isSubmit = true; }
+        if ($('#star4').is(':checked')) { isSubmit = true; }
+        if ($('#star5').is(':checked')) { isSubmit = true; }
+
+        if (isSubmit) { $('#frmReview').submit(); }
+        else {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Oops...',
+                text: 'Need vote first!',
+            })
+        }
+    })
+
+    $('.videoButton').on('click', function () {
+        var recipient = $(this).data('src')
+        var modal = $('.modal')
+
+        modal.find('.videoContainer').children().remove();
+        var video = $('<video />', {
+            src: recipient,
+            type: 'video/mp4',
+            controls: true,
+            class: 'video-js',
+            width: '100%',
+            height: '300'
+        });
+        video.appendTo($('.videoContainer'));
+    })
+
+    $('.viewButton').on('click', function () {
+        var button = $(this);
+        var id = button.data('id');
+        $.post('/course/watch/' + id)
+    })
+
+
+</script>
+{{/section}}
+
+<form id="frmWatch" action="" method="post"></form>
+
+{{#each this.course}}
+<div class="mainContent">
+
+    {{#if ../isBought}}
+
+    {{else}}
+    <div id="sideBar" class="position-absolute sideBarMenu shadow">
+        <div class="card text-left">
+            <div class="card-body">
+                <div>
+                    <img src="/public/{{CourseImage}}" alt="" class="w-100">
+                </div>
+                <div class="card-title d-flex">
+                    {{#compare SalePrice -1}}
+                    <h1 class="d-flex">
+                        <b>${{formatMoney Price}}&nbsp;</b>
+                    </h1>
+                    {{/compare}}
+                    {{#compare SalePrice -1 operator=">"}}
+                    <h1 class="d-flex">
+                        <b>${{formatMoney SalePrice}}&nbsp;</b>
+                    </h1>
+                    <h6 class="d-flex" style="line-height: 3rem;">
+                        <del>${{formatMoney Price}}</del>&nbsp;
+                    </h6>
+                    {{/compare}}
+                </div>
+
+                {{#compare isCompleted 1}}
+                <p class="card-text">
+                    {{#if ../isInCart}}
+                    <a name="" id="" class="btn btn-danger w-100 mt-sm-4" href="/cart" role="button"><b>Go to
+                            cart</b></a>
+                    {{else}}
+                <form action="/cart/add" method="post">
+                    <input type="text" name="CourseName" hidden value="{{CourseName}}">
+                    <button class="btn btn-danger w-100 my-3" type="submit"><b>Add to cart</b></button>
+                </form>
+                {{/if}}
+
+                <form id="frmBuy" action="/cart/buy/{{CourseName}}" method="post">
+                </form>
+                <button id="{{#if ../isAuth}}buy{{else}}buyNotAuth{{/if}}" class="btn btn-outline-primary w-100"><b>Buy
+                        now</b></button>
+
+                </p>
+                {{/compare}}
+
+                {{#compare isCompleted 0}}
+                <p class="card-text text-danger h5 text-center">(This course is still in progress)</p>
+                {{/compare}}
+
+
+            </div>
+        </div>
+    </div>
+    {{/if}}
+
+    <div class="topContainer">
+        <div class="card text-white bg-dark">
+            <div class="card-body"
+                style="margin: {{#if ../isBought}}4rem 8rem 4rem 8rem{{else}}4rem 39rem 1rem 8rem{{/if}};">
+                <h5 class="h1 card-title m0">{{CourseName}}</h5>
+                <h5 class="card-title">{{ShortDes}}</h5>
+                <div style="color: orange;">{{formatRate rate}}
+                    {{> ratingStar}}
+                    <span style="color: white;">({{formatCount totalVotes}} ratings)</span>
+                    <span style="color: white;">{{formatCount StudentCount}} students</span>
+                </div>
+                <div class="teacher">
+                    <p>Created by <a href="#lecturer">{{lecturerName}}</a></p>
+                </div>
+                <div>
+                    <p> <i class="fa fa-exclamation-circle" aria-hidden="true"></i>
+                        Last updated {{UpdatedDate}}
+
+                    </p>
+                    <p>
+                    <form id="frmWishlist" action="/course/addWishlist" method="post">
+                        <input type="text" class="d-none" name="CourseID" value="{{CourseID}}">
+                        <input type="text" class="d-none" name="CourseName" value="{{CourseName}}">
+                        <input type="text" class="d-none" name="isInWishlist" value="{{../isInWishlist}}">
+                        <button type="submit" class="btn btn-outline-dark border-white text-white">
+                            Watchlist
+                            {{#if ../isInWishlist}}
+                            <i class="fa fa-heart" style="color: red;" aria-hidden="true"></i>
+                            {{else}}
+                            <i class="fa fa-heart-o" aria-hidden="true"></i>
+                            {{/if}}
+                        </button>
+                    </form>
+                    </p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="botContainer"
+        style="margin: {{#if ../isBought}}4rem 8rem 4rem 8rem{{else}}4rem 39rem 1rem 8rem{{/if}};">
+        <h4>Description</h4>
+
+        {{{Description}}}
+
+        <div class="courseContent mt-4">
+            <h4>Course content</h4>
+
+            <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                <div id="accordion">
+                    {{#each content}}
+                    <div class="card">
+                        <div class="card-header" id="heading{{ContentID}}">
+                            <h5 class="mb-0">
+                                <button class="btn btn-outline-light collapsed w-100 text-dark text-left"
+                                    data-toggle="collapse" data-target="#collapse{{ContentID}}" aria-expanded="true"
+                                    aria-controls="collapse{{ContentID}}">
+                                    <i class="fa fa-arrow-down rotate"
+                                        style="animation-duration: 1s;animation-fill-mode: forwards;"></i>
+                                    {{ContentName}}
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapse{{ContentID}}" class="collapse" aria-labelledby="heading{{ContentID}}">
+                            {{#each lecture}}
+
+                            {{#compare LectureName '' operator=">"}}
+                            <div class="card-body my-0">
+
+                                {{#if ../../../isBought}}
+                                <button class="btn viewButton btn-link ml-1" type="button" data-id="{{LectureID}}"
+                                    data-toggle="modal" data-src="/public/videos/{{VideoLink}}" data-target="#myModal">
+                                    <i class="fa fa-play-circle" aria-hidden="true"></i>
+                                    {{LectureName}}
+                                </button>
+
+                                {{#if isWatch}}
+                                <span>(Watched)</span>
+
+                                {{/if}}
+                                {{else}}
+
+
+                                {{#if Preview}}
+                                <button class="btn previewButton btn-link ml-1" type="button" data-toggle="modal"
+                                    data-src="/public/videos/{{VideoLink}}" data-target="#myModal">
+                                    <i class="fa fa-play-circle" aria-hidden="true"></i>
+                                    {{LectureName}}
+                                </button>
+                                {{else}}
+                                <span class="ml-sm-3">
+                                    <i class="fa fa-play-circle" aria-hidden="true"></i>
+                                    {{LectureName}}
+                                </span>
+
+                                {{/if}}
+                                {{/if}}
+                            </div>
+                            {{/compare}}
+
+
+                            {{/each}}
+                        </div>
+                    </div>
+                    {{/each}}
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="background-color: black;">
+                    <div class="videoContainer">
+                    </div>
+                    <div class="lectureContainer">
+                        {{#each content}}
+                        {{#each lecture}}
+                        {{#compare LectureName '' operator=">"}}
+                        {{#if ../../../isBought}}
+                        <button class="btn videoButton viewButton d-flex btn-dark w-100 my-1"
+                            data-src="/public/videos/{{VideoLink}}" type="button" data-id="{{LectureID}}"
+                            style="height: 3rem;font-size: 1.1rem;line-height: 2.5rem;">
+                            <i class="fa fa-play-circle-o fa-lg mx-3" aria-hidden="true"
+                                style="line-height: 2.5rem;"></i>
+                            <span class="mr-3"> {{LectureName}}</span>
+                            {{#if isWatch}}
+                            <span class="text-success">(Watched)</span>
+
+                            {{/if}}
+                        </button>
+                        {{else}}
+                        {{#if Preview}}
+                        <button class="btn videoButton d-flex btn-dark w-100 my-1"
+                            data-src="/public/videos/{{VideoLink}}" type="button"
+                            style="height: 3rem;font-size: 1.1rem;line-height: 2.5rem;">
+                            <i class="fa fa-play-circle-o fa-lg mx-3" aria-hidden="true"
+                                style="line-height: 2.5rem;"></i>
+                            <span class="mr-4">{{LectureName}}</span>
+                        </button>
+                        {{/if}}
+                        {{/if}}
+                        {{/compare}}
+                        {{/each}}
+                        {{/each}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <div class="lecturer  mt-4" id="lecturer">
+            <h4>Lecturer </h4>
+            <h4> <span style="color: rgb(13, 13, 131);">{{lecturerName}}</span></h4>
+            <div class="d-flex">
+                <a href="javascript:;">
+                    <img src="/public/images/user.png" style="width: 150px;height: 150px;" class="rounded-circle"
+                        alt="">
+                </a>
+                <ul style="list-style-type: none;">
+                    <li class="my-2">
+                        <i class="fa fa-star mx-1" style="color: orange;" aria-hidden="true"></i>
+                        <span>
+                            {{formatRate ../countRating}} Lecturer Rating
+                        </span>
+                    </li>
+                    <li class="my-2">
+                        <i class="fa fa-certificate mx-1" style="color: orange;" aria-hidden="true"></i>
+                        <span>
+                            {{formatCount ../countReview}} Reviews
+                        </span>
+                    </li>
+                    <li class="my-2">
+                        <i class="fa fa-users mx-1" style="color: orange;" aria-hidden="true"></i>
+                        <span>
+                            {{formatCount StudentCount}} Students
+                        </span>
+                    </li>
+                    <li class="my-2">
+                        <i class="fa fa-play-circle mx-1" style="color: orange;" aria-hidden="true"></i>
+                        <span>
+                            {{formatCount ../countCourse}} Courses
+                        </span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="studentFeedback mt-4">
+            <h4>Student Feedback</h4>
+            <div class="d-flex">
+                <div class="d-inline-block">
+                    <h1 class="text-center px-2" style="font-size: 4.8rem; color: orange;">{{formatRate rate}}</h1>
+                    <p class="text-center bigStar">
+                        {{> ratingStar}}
+                    </p>
+                    <p class="text-center">
+                        Course Rating
+                    </p>
+                </div>
+                <div class="d-block w-100">
+                    <div class="d-flex flex-row mt-2">
+                        <div class="progress ml-3" style="width: 500px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{../rate_5}}%"
+                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="d-inline-flex float-right mx-2">
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                        </span>
+                        <span style="margin-top: -.3rem;">
+                            {{formatCount ../rate_5}}%
+                        </span>
+                    </div>
+                    <div class="d-flex flex-row mt-2">
+                        <div class="progress ml-3" style="width: 500px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{../rate_4}}%"
+                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="d-inline-flex float-right mx-2" style="color: orange;">
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                        </span>
+                        <span style="margin-top: -.3rem;">
+                            {{formatCount ../rate_4}}%
+                        </span>
+                    </div>
+                    <div class="d-flex flex-row mt-2">
+                        <div class="progress ml-3" style="width: 500px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{../rate_3}}%"
+                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="d-inline-flex float-right mx-2" style="color: orange;">
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                        </span>
+                        <span style="margin-top: -.3rem;">
+                            {{formatCount ../rate_3}}%
+                        </span>
+                    </div>
+                    <div class="d-flex flex-row mt-2">
+                        <div class="progress ml-3" style="width: 500px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{../rate_2}}%"
+                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="d-inline-flex float-right mx-2" style="color: orange;">
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                        </span>
+                        <span style="margin-top: -.3rem;">
+                            {{formatCount ../rate_2}}%
+                        </span>
+                    </div>
+                    <div class="d-flex flex-row mt-2">
+                        <div class="progress ml-3" style="width: 500px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{../rate_1}}%"
+                                aria-valuenow="28" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                        <span class="d-inline-flex float-right mx-2" style="color: orange;">
+                            <i class="fa fa-star float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                            <i class="fa fa-star-o float-right" aria-hidden="true"></i>
+                        </span>
+                        <span style="margin-top: -.3rem;">
+                            {{formatCount ../rate_1}}%
+                        </span>
+                    </div>
+
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="reviews my-4">
+            <h4>Reviews</h4>
+            {{#if ../isBought}}
+
+            <form id="frmReview" action="/course/review" method="post">
+                <input type="text" class="d-none" name="CourseID" value="{{CourseID}}">
+                <input type="text" class="d-none" name="CourseName" value="{{CourseName}}">
+                <div class="reviewItem flex-column">
+                    <div class="d-flex">
+                        <div class="reviewItemAvatar text-center text-white align-content-center rounded-circle"
+                            style="width: 3rem;">
+                            {{../userAuth.shortName}}
+                        </div>
+                        <b style="line-height: 3rem;">{{userName}}</b>
+                    </div>
+
+                    <div class="w-100 d-flex flex-column form-group">
+                        <div id="rating" class="d-inline-block text-left my-1 form-group" style="margin-right: 65rem;">
+                            <input type="radio" id="star5" name="rating" value="5" />
+                            <label class="full" for="star5" title="Awesome - 5 stars"></label>
+
+                            <input type="radio" id="star4" name="rating" value="4" />
+                            <label class="full" for="star4" title="Pretty good - 4 stars"></label>
+
+                            <input type="radio" id="star3" name="rating" value="3" />
+                            <label class="full" for="star3" title="Meh - 3 stars"></label>
+
+                            <input type="radio" id="star2" name="rating" value="2" />
+                            <label class="full" for="star2" title="Kinda bad - 2 stars"></label>
+
+                            <input type="radio" id="star1" name="rating" value="1" />
+                            <label class="full" for="star1" title="Sucks big time - 1 star"></label>
+                        </div>
+                        <div class="form-group w-100">
+                            <label for="comment">Your feeling</label>
+                            <textarea class="form-control w-100" name="Comment" id="comment" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <button id="submitReviewButton" type="button" class="btn btn-outline-success w-25">Post</button>
+                </div>
+            </form>
+            {{/if}}
+            {{#each review}}
+            <div class="reviewItem">
+                <div class="reviewItemAvatar text-center text-white align-content-center rounded-circle"
+                    style="width: 3rem;">
+                    {{shortName}}
+                </div>
+                <div>
+                    <div>
+                        <b>{{UserName}}</b>
+                    </div>
+                    <div>
+                        {{> ratingStarUpperCase}}
+                    </div>
+                    <div>
+                        {{Comment}}
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <h4>Top 5 Course In Same Category</h4>
+        <div class="col-sm">
+            {{#each fiveCourse}}
+            <a class="btn card text-left d-inline-flex" style="width: 14.3rem;height: 27rem;"
+                href="/course/{{CourseName}}" role="button">
+                <img src="/public/{{CourseImage}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h6 class="card-title">{{CourseName}}</h6>
+                    <p style="font-size: 0.8rem;">{{lecturerName}}</p>
+                    <p style="font-size: 0.8rem;color: orange;">
+                        <span style="color:rgb(189, 125, 8)">{{formatRate rate}} </span>
+                        {{> ratingStar}}
+                        <i>({{formatCount StudentCount}})</i>
+                    </p>
+                    <p style="font-size: 0.8rem;">
+                        {{#compare SalePrice -1}}
+                        <b> ${{formatMoney Price}}</b><br><br>
+                        {{/compare}}
+                        {{#compare SalePrice -1 operator=">"}}
+                        <b> ${{formatMoney SalePrice}}</b><br><br>
+                        <del>${{formatMoney Price}}</del>
+                        {{/compare}}
+                    </p>
+                </div>
+            </a>
+            {{/each}}
+        </div>
+    </div>
+
+
+</div>
+</div>
+{{/each}}

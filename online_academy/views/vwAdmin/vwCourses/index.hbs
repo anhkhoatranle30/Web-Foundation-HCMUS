@@ -1,0 +1,91 @@
+<div class="card">
+  <h5 class="card-header d-flex justify-content-between">
+            Courses
+            {{!-- <a class="btn btn-light" href="/admin/lecturers/add" role="button">
+                <i class="fa fa-user-plus" aria-hidden="true"></i>
+                Add Lecturer
+            </a> --}}
+            <div class="w-10">
+            <select class="form-control w-10" name="formal" onchange="javascript:handleSelect(this)">
+              <option value="" disabled selected>--</option>
+              <option value="/admin/courses">All Courses</option>
+              {{#each this.subcategories}}
+                <option value="/admin/courses/filter/{{SubcategoryID}}">{{SubcategoryName}}</option>
+              {{/each}}
+            </select>              
+            </div>
+            
+
+            <script type="text/javascript">
+              function handleSelect(elm)
+              {
+                window.location = elm.value;
+              }
+            </script>
+  </h5>
+  {{#if this.empty}}
+  <div class="card-body">
+    <p class="card-text">Không có dữ liệu.</p>
+  </div>
+  {{else}}
+  <form method="POST">
+      <div class="card-body"> <span style="font-weight: bold;">{{this.subName}}</span> Courses </div>
+      <div class="card-body">
+        <div class="row">
+        {{#each this.courses}}
+        
+        <div class="col-sm-4 mb-3">
+            <div class="form-group collapse">
+                <label for="txtCourseID">CourseID</label>
+                <input type="text" class="form-control" id="txtCourseID" name="CourseID" value="{{CourseID}}" readonly>
+            </div>
+            <div class="card h-100 shadow">
+            <div class="card-header bg-dark">
+              <div class="d-flex flex-row bd-highlight   justify-content-between">
+              <span class="text-light">ID</span>
+              <span class="badge bg-secondary text-light">{{CourseID}}</span>
+              
+            </div>
+            </div>
+            <img src="/public/{{CourseImage}}" class="card-img-top" alt="{{CourseName}}"
+                title="{{CourseName}}">
+            <div class="card-body">
+                <h6 class="card-title">{{CourseName}}</h6>
+                {{#each lecturers}}
+                    <span class="badge bg-dark text-light">{{LecturerName}}</span>
+                {{/each}}
+                <p class="card-text">
+                {{ShortDes}}
+                </p>
+                
+            </div>
+            <div class="card-footer">
+                {{#if isDisabled}}
+                  <button type="submit" class="btn btn btn-dark text-light" formaction="/admin/courses/enable/{{CourseID}}" {{#if this.isActive}}disabled{{/if}}>
+                      <i class="fa fa-check-circle" aria-hidden="true"></i>
+                      Enable
+                  </button>
+                {{else}}
+                  <button type="submit" class="btn btn btn-dark text-light" formaction="/admin/courses/disable/{{CourseID}}" {{#if this.isActive}}disabled{{/if}}>
+                      <i class="fa fa-ban" aria-hidden="true"></i>
+                      Disable
+                  </button>
+                {{/if}}
+                
+                <button type="submit" class="btn btn-outline-dark " formaction="/admin/courses/del/{{CourseID}}" {{#if this.isActive}}disabled{{/if}}>
+                    <i class="fa fa-trash" aria-hidden="true"></i>
+                    Delete
+                </button>
+                
+            </div>
+            </div>
+        </div>
+        
+        {{/each}}
+        </div>
+    </div>
+  </form>
+  
+  {{/if}}
+  
+</div>
